@@ -2,7 +2,7 @@
 /* eslint-disable react/no-array-index-key */
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect } from 'react';
-import { Checkbox } from '@material-ui/core';
+import { Checkbox } from 'components';
 import styled from 'styled-components';
 import { TriangleDown } from 'styled-icons/octicons/TriangleDown';
 import { GET } from 'utils';
@@ -10,10 +10,9 @@ import Pagination from '../Pagination';
 
 const Table = styled.table`
   width: 100%;
-  margin-top: 10px;
 `;
 
-const Text = styled.text`
+const Text = styled.p`
   cursor: pointer;
   user-select: none;
 `;
@@ -28,7 +27,7 @@ const Row = styled.tr`
   }
 `;
 const HeaderCell = styled.th`
-  padding: 14px 40px 14px 16px;
+  padding: 20px 40px 2px 16px;
   color: #007eff;
   border-bottom: 1px solid #e0e0e0;
   font-size: 0.8rem;
@@ -107,16 +106,19 @@ const DataTable = ({ children, resource }) => {
   const renderCell = (record, source, type, suffix) => {
     if (typeof record[source] === 'boolean') {
       if (record[source].toString() === 'true') {
-        return <Checkbox style={{ padding: '0px' }} disabled checked />;
+        return <Checkbox style={{ padding: '0px' }} readOnly checked />;
       }
-      return <Checkbox style={{ padding: '0px' }} disabled />;
+      return <Checkbox style={{ padding: '0px' }} />;
     }
     if (record[source] === null) {
       return `${suffix || ''}`;
     }
     if (type === 'link') {
       return (
-        <a href={record[source]} style={{ textDecoration: 'none' }}>
+        <a
+          href={record[source]}
+          style={{ textDecoration: 'none', color: '#007eff' }}
+        >
           Learn More
         </a>
       );
@@ -127,17 +129,18 @@ const DataTable = ({ children, resource }) => {
   return (
     <div>
       <Table>
-        <thead>
-          {React.Children.map(children, (child, i) => (
-            <HeaderCell key={i}>
-              <div style={{ display: 'flex' }}>
-                <Text
-                  onClick={() => handleChangeSort(child.props.source)}
-                  style={{ marginTop: '2px' }}
-                >
-                  {child.props.label}
-                </Text>
-                {/* <StyledTriangle
+        <tbody>
+          <tr>
+            {React.Children.map(children, (child, i) => (
+              <HeaderCell key={i}>
+                <div style={{ display: 'flex' }}>
+                  <Text
+                    onClick={() => handleChangeSort(child.props.source)}
+                    style={{ marginTop: '2px' }}
+                  >
+                    {child.props.label}
+                  </Text>
+                  {/* <StyledTriangle
                   opacity={showArrow}
                   style={{ margin: '6px 0px 0px 6px', color: 'black' }}
                   cursor="pointer"
@@ -147,7 +150,7 @@ const DataTable = ({ children, resource }) => {
                   child={child.props.source}
                 /> */}
 
-                {/* <input
+                  {/* <input
                   style={{
                     marginLeft: '6px',
                     background: '#fff',
@@ -161,10 +164,11 @@ const DataTable = ({ children, resource }) => {
                   width="50%"
                   height="50%"
                 /> */}
-              </div>
-            </HeaderCell>
-          ))}
-        </thead>
+                </div>
+              </HeaderCell>
+            ))}
+          </tr>
+        </tbody>
         <tbody>
           {data
             .slice(
