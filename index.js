@@ -69,8 +69,25 @@ const DataTable = ({ children, resource }) => {
     getData();
   }, []);
 
-  const getData = () => {
-    GET(resource).then(res => setData(res.data));
+  const getData = async () => {
+    const splitResource = resource.split('+');
+    const endPoint = splitResource[0];
+    const response = await GET(endPoint);
+    const responseData = response.data;
+
+    switch (splitResource.length) {
+      case 1:
+        setData(responseData);
+        break;
+      case 2:
+        setData(responseData[`${splitResource[1]}`]);
+        break;
+      case 3:
+        setData(responseData[`${splitResource[2]}`]);
+        break;
+
+      default:
+    }
   };
 
   const handleChangePage = (e, page) => {
@@ -103,27 +120,25 @@ const DataTable = ({ children, resource }) => {
     setData(data.sort(compareValues(value, sortDirection)));
   };
 
-  const renderCell = (record, source, type, suffix) => {
-    if (typeof record[source] === 'boolean') {
-      if (record[source].toString() === 'true') {
-        return <Checkbox style={{ padding: '0px' }} readOnly checked />;
-      }
-      return <Checkbox style={{ padding: '0px' }} />;
+  const renderCell = (child, record) => {
+    switch (child.props.type) {
+      case 'bool':
+        if (record[child.props.source].toString() === 'true') {
+          return <Checkbox style={{ padding: '0px' }} readOnly checked />;
+        }
+        return <Checkbox style={{ padding: '0px' }} />;
+      case 'link':
+        return (
+          <a
+            href={record[child.props.source]}
+            style={{ textDecoration: 'none', color: '#007eff' }}
+          >
+            Learn More
+          </a>
+        );
+      default:
+        return record[child.props.source] || '';
     }
-    if (record[source] === null) {
-      return `${suffix || ''}`;
-    }
-    if (type === 'link') {
-      return (
-        <a
-          href={record[source]}
-          style={{ textDecoration: 'none', color: '#007eff' }}
-        >
-          Learn More
-        </a>
-      );
-    }
-    return record[source];
   };
 
   return (
@@ -138,7 +153,7 @@ const DataTable = ({ children, resource }) => {
                     onClick={() => handleChangeSort(child.props.source)}
                     style={{ marginTop: '2px' }}
                   >
-                    {child.props.label}
+                    {child.props.label || child.props.source}
                   </Text>
                   {/* <StyledTriangle
                   opacity={showArrow}
@@ -179,8 +194,7 @@ const DataTable = ({ children, resource }) => {
               <Row key={i}>
                 {React.Children.map(children, (child, j) => (
                   <StyledCell key={j}>
-                    {renderCell(record, child.props.source, child.props.type) ||
-                      child.props.suffix}
+                    {renderCell(child, record) || child.props.suffix}
                   </StyledCell>
                 ))}
               </Row>
